@@ -1,0 +1,5 @@
+PySide6>=6.7
+aioslsk>=1.7
+requests>=2.31
+mutagen>=1.47
+websockets>=13.0

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=AtmosHunter
+GenericName=Dolby Atmos Music Manager
+Comment=Desktop client for searching, verifying, and casting Dolby Atmos and Hi-Res audio over DLNA
+Exec=sh -c '"$(dirname "%k")/iniciar.sh"'
+Icon=audio-x-generic
+Terminal=false
+Categories=AudioVideo;Audio;Music;
+Keywords=dolby;atmos;music;dlna;hires;flac;
+StartupNotify=true
+StartupWMClass=python3
+X-GNOME-Autostart-enabled=false

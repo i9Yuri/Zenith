@@ -1,0 +1,30 @@
+# Python / Virtualenv
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# Logs, caches e arquivos locais de ambiente
+.launcher.log
+*.log
+.directory
+.DS_Store
+.env
+.env.*
+
+# Regras locais de agentes (nunca versionar)
+.agents/
+AGENTS.md
+GEMINI.md
+
+# Artefatos temporarios e midia local
+*.mp4
+*.mkv
+*.m4a
+*.mka
+*.flac
+*.wav
+*.part
