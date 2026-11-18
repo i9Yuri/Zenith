@@ -780,6 +780,53 @@ def test_gui_stress_and_screenshots():
     print(f"  OK: GUI 3 abas + relatório renderizados e fechados sem erros! Prints em {shot_dir}")
 
 
+def test_fragment_isolation_and_cleanup():
+    print("[10/10] Testando blindagem contra fragmentos (.frag/.part) e expurgo automático...")
+    from core.slsk_service import STAGING_DIR, cleanup_stray_artifacts
+
+    # 1. Filtro anti-lixo deve descartar imediatamente qualquer fragmento oriundo do Soulseek
+    frag_cands = [
+        TrackResult(title="Lose My Mind", filename="Lose.My.Mind.m4a.frag", extension=".frag", size_bytes=15 * 1024**2),
+        TrackResult(title="Lose My Mind", filename="Lose.My.Mind-Frag1.m4a", extension=".m4a", size_bytes=15 * 1024**2),
+        TrackResult(title="Lose My Mind", filename="Lose.My.Mind.part", extension=".part", size_bytes=15 * 1024**2),
+        TrackResult(title="Lose My Mind", filename="Lose.My.Mind.m4a.ytdl", extension=".ytdl", size_bytes=15 * 1024**2),
+    ]
+    for fc in frag_cands:
+        junk, reason = is_junk(fc)
+        assert junk, f"Arquivo de fragmento {fc.filename} deveria ser descartado por is_junk! Motivo: {reason}"
+
+    # 2. Testar expurgo ativo em diretório temporário isolado
+    with tempfile.TemporaryDirectory() as tmp_dir_str:
+        tmp_dir = Path(tmp_dir_str)
+        # Criar arquivos legítimos (que não devem ser apagados)
+        safe_file = tmp_dir / "valid_track.m4a"
+        safe_file.write_bytes(b"VALID_AUDIO_DATA_FOR_TEST")
+        safe_py = tmp_dir / "script.py"
+        safe_py.write_text("# legitimate code")
+
+        # Criar fragmentos e parciais órfãos (que DEVEM ser removidos)
+        bad_frag1 = tmp_dir / "stream_download.mp4.frag1"
+        bad_frag1.write_bytes(b"CHUNK1")
+        bad_frag2 = tmp_dir / "track-Frag2"
+        bad_frag2.write_bytes(b"CHUNK2")
+        bad_part = tmp_dir / "interrupted.m4a.part"
+        bad_part.write_bytes(b"PARTIAL")
+        bad_ytdl = tmp_dir / "video.m4a.ytdl"
+        bad_ytdl.write_bytes(b"YTDL_INDEX")
+
+        removed = cleanup_stray_artifacts([tmp_dir])
+        assert removed == 4, f"Deveria ter expurgado 4 fragmentos, removeu {removed}"
+        assert safe_file.exists(), "Arquivo legítimo não deveria ter sido removido!"
+        assert safe_py.exists(), "Código legítimo não deveria ter sido removido!"
+        assert not bad_frag1.exists(), "Fragmento bad_frag1 não foi expurgado!"
+        assert not bad_frag2.exists(), "Fragmento bad_frag2 não foi expurgado!"
+        assert not bad_part.exists(), "Parcial bad_part não foi expurgado!"
+        assert not bad_ytdl.exists(), "Arquivo bad_ytdl não foi expurgado!"
+
+    assert STAGING_DIR.name == "staging", f"STAGING_DIR incorreto: {STAGING_DIR}"
+    print("  OK: Detecção anti-frag, descarte no ranker e expurgo automático 100% validados")
+
+
 if __name__ == "__main__":
     test_ranker_and_filters()
     test_anti_collision_and_fast_remux()
@@ -787,7 +834,8 @@ if __name__ == "__main__":
     test_variation_aware_selection()
     test_samsung_tv_controller_silent()
     test_audio_verification_truth_and_failover()
+    test_fragment_isolation_and_cleanup()
     test_dlna_bridge()
     test_live_search_and_e2e_playlist_import()
     test_gui_stress_and_screenshots()
-    print("\n=== SUITE COMPLETA ATMOSHUNTER v2.8: 9/9 PASSOU SEM ERROS ===")
+    print("\n=== SUITE COMPLETA ATMOSHUNTER v2.8: 10/10 PASSOU SEM ERROS ===")

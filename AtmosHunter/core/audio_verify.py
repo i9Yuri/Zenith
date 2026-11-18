@@ -65,6 +65,8 @@ def probe_audio_full(path: Path, timeout: float = 8.0) -> dict:
     if not shutil.which("ffprobe") or not path.exists():
         return {}
     try:
+        from core.slsk_service import STAGING_DIR
+        STAGING_DIR.mkdir(parents=True, exist_ok=True)
         proc = subprocess.run(
             [
                 "ffprobe", "-v", "error",
@@ -74,6 +76,7 @@ def probe_audio_full(path: Path, timeout: float = 8.0) -> dict:
                 "-of", "json",
                 str(path),
             ],
+            cwd=str(STAGING_DIR),
             capture_output=True,
             text=True,
             timeout=timeout,

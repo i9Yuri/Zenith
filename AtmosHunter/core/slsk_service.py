@@ -63,6 +63,45 @@ CONFIG_FILE = Path.home() / ".config" / "atmoshunter" / "slsk.json"
 STAGING_DIR = Path.home() / ".cache" / "atmoshunter" / "staging"
 
 
+def cleanup_stray_artifacts(target_dirs: list[Path] | None = None) -> int:
+    """
+    Remove ativamente fragmentos e arquivos temporários órfãos (.frag, .part, .tmp, .ytdl, etc.)
+    do diretório de staging e/ou dos diretórios raízes do projeto.
+    Retorna o número de arquivos expurgados.
+    """
+    removed = 0
+    dirs_to_clean: list[Path] = list(target_dirs or [])
+    if STAGING_DIR not in dirs_to_clean:
+        dirs_to_clean.append(STAGING_DIR)
+
+    junk_suffixes = {".frag", ".part", ".tmp", ".crdownload", ".ytdl"}
+    for d in dirs_to_clean:
+        if not d.exists() or not d.is_dir():
+            continue
+        try:
+            # Varredura rasa nos diretórios do projeto para segurança; recursiva apenas em STAGING_DIR
+            pattern_iter = d.rglob("*") if d == STAGING_DIR else d.glob("*")
+            for item in list(pattern_iter):
+                if not item.is_file():
+                    continue
+                name_low = item.name.lower()
+                is_stray = (
+                    item.suffix.lower() in junk_suffixes
+                    or any(s in name_low for s in (".frag", "-frag", ".part-frag", ".crdownload", ".ytdl"))
+                    or item.suffix.lower().startswith(".frag")
+                    or item.suffix.lower().startswith(".part")
+                )
+                if is_stray:
+                    try:
+                        item.unlink(missing_ok=True)
+                        removed += 1
+                    except OSError:
+                        pass
+        except Exception:
+            pass
+    return removed
+
+
 def _pick_free_port(exclude: int = 0) -> int:
     """Seleciona uma porta TCP livre dinamicamente para evitar conflito entre instâncias."""
     for _ in range(10):
@@ -166,15 +205,17 @@ class SoulseekService:
         self._thread.start()
 
     def _cleanup_old_staging(self):
-        """Remove arquivos parciais antigos (>6h) deixados por downloads interrompidos (inclusive em subpastas)."""
+        """Remove arquivos parciais antigos e expurga fragmentos órfãos (inclusive em subpastas)."""
         now = time.time()
         try:
-            for item in STAGING_DIR.rglob("*"):
-                if item.is_file() and (now - item.stat().st_mtime) > 6 * 3600:
+            cleanup_stray_artifacts([STAGING_DIR])
+            for item in list(STAGING_DIR.rglob("*")):
+                # Arquivos normais não-finalizados com mais de 2h também são expurgados
+                if item.is_file() and (now - item.stat().st_mtime) > 2 * 3600:
                     item.unlink(missing_ok=True)
             # Remover subpastas vazias
             for sub in sorted(STAGING_DIR.rglob("*"), reverse=True):
-                if sub.is_dir():
+                if sub.is_dir() and sub != STAGING_DIR:
                     try:
                         sub.rmdir()
                     except OSError:

@@ -177,6 +177,7 @@ def _probe_stream_info(path: Path) -> dict:
                 "-of", "json",
                 str(path),
             ],
+            cwd=str(STAGING_DIR),
             capture_output=True,
             text=True,
             timeout=10,
@@ -233,6 +234,7 @@ def remux_atmos_for_tv_soundbar(src_path: Path, track: TrackResult, work_dir: Op
         # 1. Extrair capa original e pré-redimensionar 1 única vez para 1280x720 (acelera ffmpeg em ~8x!)
         cproc = subprocess.run(
             ["ffmpeg", "-y", "-v", "error", "-i", str(src_path), "-an", "-vcodec", "copy", str(raw_cover)],
+            cwd=str(tmp_dir),
             capture_output=True,
             timeout=10,
         )
@@ -254,6 +256,7 @@ def remux_atmos_for_tv_soundbar(src_path: Path, track: TrackResult, work_dir: Op
                     "-frames:v", "1",
                     str(scaled_cover),
                 ],
+                cwd=str(tmp_dir),
                 capture_output=True,
                 timeout=10,
             )
@@ -295,7 +298,7 @@ def remux_atmos_for_tv_soundbar(src_path: Path, track: TrackResult, work_dir: Op
 
         cmd.append(str(out_path))
 
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        res = subprocess.run(cmd, cwd=str(tmp_dir), capture_output=True, text=True, timeout=60)
         if res.returncode == 0 and out_path.exists() and out_path.stat().st_size > 512 * 1024:
             check = _probe_stream_info(out_path)
             if str(check.get("codec_name") or "").lower() == codec_name:

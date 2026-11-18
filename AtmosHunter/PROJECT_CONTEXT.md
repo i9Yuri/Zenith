@@ -77,6 +77,7 @@ MainWindow
 
 ### O que NUNCA fazer
 - **Não reintroduzir trackers públicos de torrent (Bitsearch/1337x) como fonte primária** — eles retornam filmes 4K de 50 GB e episódios de séries em vez de faixas individuais.
+- **Não permitir vazamento de fragmentos temporários (.frag, .part, .tmp) na raiz do repositório** — todo subprocesso (`ffmpeg`, `ffprobe`, `yt-dlp`, Chromium headless) deve operar estritamente isolado em `STAGING_DIR` (`~/.cache/atmoshunter/staging`), mantendo o workspace limpo.
 - **Não usar hex CSS de 8 dígitos `#rrggbbaa` em QSS do Qt** — o Qt interpreta `#aarrggbb`, causando cores erradas; use sempre `rgba(r, g, b, alpha)`.
 - **Não bloquear a thread principal do Qt** — o `SoulseekService` mantém seu próprio event loop `asyncio` em thread separada e comunica via sinais Qt (`Signal`).
 - **Não exigir configuração manual ou login do usuário** — o app deve abrir com duplo clique e funcionar imediatamente.

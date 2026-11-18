@@ -28,3 +28,10 @@ GEMINI.md
 *.flac
 *.wav
 *.part
+*.part*
+*.frag
+*.frag*
+*.ytdl
+*.crdownload
+*.tmp
+*.tmp*

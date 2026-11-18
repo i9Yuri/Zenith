@@ -120,6 +120,7 @@ FORBIDDEN_EXTS = {
     ".mkv", ".avi", ".mov", ".wmv", ".webm", ".ts", ".m2ts", ".vob",
     ".mp3", ".ogg", ".wma", ".opus", ".aac",
     ".jpg", ".jpeg", ".png", ".pdf", ".txt", ".nfo", ".log", ".m3u", ".m3u8", ".sfv", ".lrc",
+    ".frag", ".part", ".crdownload", ".ytdl", ".tmp",
 }
 
 HARD_JUNK_PATTERNS = [
@@ -130,6 +131,8 @@ HARD_JUNK_PATTERNS = [
     r'\b(Complete\.?Series|Season\s*\d+|Episode\s*\d+|Feature\.?Film|Theatrical\.?Cut)\b',
     r'\b(AMZN|DSNP|NF|HMAX)\s+(WEB|WEBDL|WEB-DL)\b',
     r'\b(Karaoke|Instrumental\s+Cover|8D\s+Audio|Slowed\s*\+?\s*Reverb|Nightcore)\b',
+    r'\.(frag\d*|part\d*|crdownload|ytdl|tmp)(\.|$)',
+    r'-(frag\d+|part\d+)(\.|$)',
 ]
 
 

@@ -9,6 +9,10 @@ DEST_DIR="${HOME}/Music/DolbyAtmos"
 
 mkdir -p "$DEST_DIR"
 
+# Limpeza preventiva de qualquer fragmento orfao (.frag/.part) nas pastas do projeto
+rm -f "$SCRIPT_DIR"/*.frag* "$SCRIPT_DIR"/*.part* "$SCRIPT_DIR"/*.ytdl* "$SCRIPT_DIR"/*.crdownload* 2>/dev/null || true
+rm -f "$SCRIPT_DIR/.."/*.frag* "$SCRIPT_DIR/.."/*.part* "$SCRIPT_DIR/.."/*.ytdl* "$SCRIPT_DIR/.."/*.crdownload* 2>/dev/null || true
+
 exec >> "$LOG" 2>&1
 echo "=== $(date) === Iniciando AtmosHunter v2.8 ==="
 

@@ -583,8 +583,21 @@ def _parse_youtube_or_generic_ytdlp(url: str, platform_label: str = "YouTube Mus
         host = "music.youtube.com" if "music.youtube" in parsed.netloc else "www.youtube.com"
         target_url = f"https://{host}/playlist?list={qs['list'][0]}"
 
+    from core.slsk_service import STAGING_DIR
+    STAGING_DIR.mkdir(parents=True, exist_ok=True)
+
     proc = subprocess.run(
-        [ytdlp, "--flat-playlist", "--no-warnings", "-J", target_url],
+        [
+            ytdlp,
+            "--flat-playlist",
+            "--no-warnings",
+            "--no-cache-dir",
+            "--paths", f"home:{STAGING_DIR}",
+            "--paths", f"temp:{STAGING_DIR}",
+            "-J",
+            target_url,
+        ],
+        cwd=str(STAGING_DIR),
         capture_output=True,
         text=True,
         timeout=45,
@@ -752,6 +765,9 @@ def _parse_amazon_music(url: str) -> ParsedPlaylist:
     tracks: list[PlaylistTrack] = []
     pl_name = "Amazon Music Playlist"
 
+    from core.slsk_service import STAGING_DIR
+    STAGING_DIR.mkdir(parents=True, exist_ok=True)
+
     # Até 2 tentativas aumentando o tempo de hidratação da SPA (Amazon GraphQL pode oscilar 2-5s)
     for budget_ms in (16000, 24000):
         proc = subprocess.run(
@@ -765,6 +781,7 @@ def _parse_amazon_music(url: str) -> ParsedPlaylist:
                 "--dump-dom",
                 url,
             ],
+            cwd=str(STAGING_DIR),
             capture_output=True,
             text=True,
             timeout=45,
